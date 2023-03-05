@@ -13,38 +13,47 @@ window.addEventListener('scroll', () => {
 
 
 // REVIEW SLIDER
-const reviewCards = document.querySelectorAll('.review-card');
-const reviewCardHeight = 30; /* Actual height of the .review-card element in em units */
-const reviewCardCount = reviewCards.length;
-let currentIndex = 0;
-let autoSlideIntervalId = setInterval(() => slide(1), 5000);
+const slider = document.querySelector('.review-card-slider');
+const backBtn = document.querySelector('.review-back-btn');
+const nextBtn = document.querySelector('.review-next-btn');
+const cardWidth = 610; // adjust as needed
+let scrollPosition = 0;
+let interval;
 
-function slide(direction) {
-  currentIndex += direction;
-  if (currentIndex < 0) {
-    currentIndex = reviewCardCount - 1;
-  } else if (currentIndex >= reviewCardCount) {
-    currentIndex = 0;
-  }
-  const translateY = `translateY(${-currentIndex * reviewCardHeight}em)`;
-  reviewCards.forEach((card, index) => {
-    card.style.transform = translateY;
-    if (index === currentIndex) {
-      card.classList.add('active');
+function startAutoSlide() {
+  interval = setInterval(() => {
+    if (slider.scrollWidth - slider.clientWidth <= slider.scrollLeft + cardWidth) {
+      slider.scrollTo({ left: 0, behavior: 'smooth' });
+      scrollPosition = 0;
     } else {
-      card.classList.remove('active');
+      slider.scrollBy({ left: cardWidth, behavior: 'smooth' });
+      scrollPosition += cardWidth;
     }
-  });
+  }, 5000);
 }
 
-document.querySelector('.review-back-btn').addEventListener('click', () => {
-  clearInterval(autoSlideIntervalId);
-  slide(-1);
-  autoSlideIntervalId = setInterval(() => slide(1), 5000);
+startAutoSlide();
+
+nextBtn.addEventListener('click', () => {
+  clearInterval(interval); // clear interval on button click
+  if (slider.scrollWidth - slider.clientWidth <= slider.scrollLeft + cardWidth) {
+    slider.scrollTo({ left: 0, behavior: 'smooth' });
+    scrollPosition = 0;
+  } else {
+    slider.scrollBy({ left: cardWidth, behavior: 'smooth' });
+    scrollPosition += cardWidth;
+  }
+  startAutoSlide(); // restart interval after button click
 });
 
-document.querySelector('.review-next-btn').addEventListener('click', () => {
-  clearInterval(autoSlideIntervalId);
-  slide(1);
-  autoSlideIntervalId = setInterval(() => slide(1), 5000);
+backBtn.addEventListener('click', () => {
+  clearInterval(interval); // clear interval on button click
+  if (slider.scrollLeft === 0) {
+    slider.scrollTo({ left: slider.scrollWidth - slider.clientWidth, behavior: 'smooth' });
+    scrollPosition = slider.scrollWidth - slider.clientWidth;
+  } else {
+    slider.scrollBy({ left: -cardWidth, behavior: 'smooth' });
+    scrollPosition -= cardWidth;
+  }
+  startAutoSlide(); // restart interval after button click
 });
